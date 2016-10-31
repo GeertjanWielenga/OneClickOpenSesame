@@ -31,7 +31,6 @@ import org.openide.windows.WindowManager;
 
 @OnStart
 public class OneClickOpenSesame implements Runnable {
-
     private PropertyChangeListener listener;
     private DataObjectLookupListener myLookupListener;
     private final Lookup.Result<DataObject> openableResult;
@@ -78,23 +77,23 @@ public class OneClickOpenSesame implements Runnable {
     }
 
     private class DataObjectLookupListener implements LookupListener {
-
 	private static final int DELAY = 400;
 	private Timer timer;
 
 	@Override
 	public void resultChanged(LookupEvent le) {
-
 	    // throw away old timer, if neccessary
 	    if (null != timer) {
-//		System.out.println("Cancelling timer for " + openableResult.allInstances());
 		timer.cancel();
 		timer.purge();
 	    }
 	    TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
 	    // Filterung notwendig, damit ...
 	    // FIXME support favorites and files tab too
-	    if (!tc.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Projects,")) {
+	    if (tc == null ||
+                (!tc.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Projects,") &&
+                !tc.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Files,") &&
+                !tc.toString().startsWith("org.netbeans.modules.favorites.Tab[Favorites,"))) {
 		return;
 	    }
 
@@ -103,6 +102,7 @@ public class OneClickOpenSesame implements Runnable {
 	    // create new timer
 	    if (!openableResult.allInstances().isEmpty()) {
 		final DataObject dataObject = openableResult.allInstances().iterator().next();
+                
 		TimerTask task = new TimerTask() {
 		    @Override
 		    public void run() {
@@ -135,6 +135,7 @@ public class OneClickOpenSesame implements Runnable {
 			return 0;
 		    }
 		};
+                
 		timer.schedule(task, DELAY);
 	    }
 
@@ -142,13 +143,13 @@ public class OneClickOpenSesame implements Runnable {
     }
 
     private class EditorTabListener implements PropertyChangeListener {
-
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 	    Object start = evt.getOldValue();
 
 	    if ("focusGained".equals(evt.getPropertyName())) {
 		TopComponent oldTC = getNearestTopComponentFromHierarchy(start);
+                
 		/**
 		 * org.netbeans.modules.project.ui.ProjectTab[Projects,
 		 * org.netbeans.modules.project.ui.ProjectTab[Files,
@@ -159,7 +160,9 @@ public class OneClickOpenSesame implements Runnable {
                     // Beim focusGained vom Projekttab zum (z.B.) Editor soll das Flag geloescht werden.
 		    // Filterung damit es auch mit dem Reuseable-Verhalten
 		    // beim Debugging funktioniert.
-		    if (oldTC.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Projects,")) {
+		    if (oldTC.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Projects,") ||
+                        oldTC.toString().startsWith("org.netbeans.modules.project.ui.ProjectTab[Files,") ||
+                        oldTC.toString().startsWith("org.netbeans.modules.favorites.Tab[Favorites,")) {
 			removeReuseableFlagFromEditor();
 		    }
 		}
@@ -168,22 +171,25 @@ public class OneClickOpenSesame implements Runnable {
 
 	private TopComponent getNearestTopComponentFromHierarchy(Object start) {
 	    TopComponent tc = null;
+
 	    if (start instanceof JComponent) {
 		JComponent comp = (JComponent) start;
 		while (comp != null) {
-
 		    if (comp instanceof TopComponent) {
 			tc = (TopComponent) comp;
 			break;
 		    }
-		    Container parent = comp.getParent();
-		    if (parent instanceof JComponent) {
+
+                    Container parent = comp.getParent();
+		    
+                    if (parent instanceof JComponent) {
 			comp = (JComponent) parent;
 		    } else {
 			comp = null;
 		    }
 		}
 	    }
+            
 	    return tc;
 	}
     }
