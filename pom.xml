@@ -3,8 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.netbeans</groupId>
     <artifactId>ocos</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>nbm</packaging>
+    <organization>
+      <name>Geertjan Wielenga</name>
+      <url>http://blogs.oracle.com/geertjan</url>
+    </organization>
     <build>
         <plugins>
             <plugin>
