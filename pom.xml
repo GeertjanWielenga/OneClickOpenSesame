@@ -6,7 +6,7 @@
     <version>1.2-SNAPSHOT</version>
     <packaging>nbm</packaging>
     <organization>
-      <name>Geertjan Wielenga</name>
+      <name>Chris Lenz, Benno Markiewicz, Geertjan Wielenga</name>
       <url>http://blogs.oracle.com/geertjan</url>
     </organization>
     <build>
